@@ -6,7 +6,7 @@ const rowStyle = {
   display: "flex",
 };
 
-const possibleWin = ["123", "456", "789", "147", "258", "369", "159", "357"];
+const possibleWin = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7]];
 
 const squareStyle = {
   width: "60px",
@@ -60,16 +60,27 @@ const displayNoWinnerStyle = {
   marginTop: "10px",
 };
 
+const displayWinnerStyle = {
+  color: "Green",
+  fontWeight: "bold",
+  fontSize: "20px",
+  marginTop: "10px",
+};
+
+
+
 export default function App() {
   const [numberIsClick, setNumberisClick] = useState(0);
   const [firstPlayer, setFirstPlayer] = useState([]);
   const [secondPlayer, setSecondPlayer] = useState([]);
+  const [gameFinish,setGameFinish] = useState(false)
 
-  useEffect(()=> {
-    checkForWinner()
+  useEffect(() => {
+    CheckForWinner()
   })
 
   function handleGame(index) {
+    if(gameFinish) return
     let newNumberClick = _.cloneDeep(numberIsClick);
 
     // to determine which player turn
@@ -113,32 +124,44 @@ export default function App() {
         {firstPlayer.includes(index)
           ? "X"
           : secondPlayer.includes(index)
-          ? "O"
-          : ""}
+            ? "O"
+            : ""}
       </div>
     );
   }
 
-  function checkForWinner() {
+  function CheckForWinner() {
     const playerOneArr = _.cloneDeep(firstPlayer);
     const playerTwoArr = _.cloneDeep(secondPlayer);
 
-    const playerOneString = getMoveArrangement(playerOneArr);
-    console.warn(playerOneString)
-    // if(_.find(playerOneString.)
-    // const isPlayerOneWinner = _.reduce(playerOneArr,(newstring,data) => {return newstring.concat(data) })
-    // const isPlayerTwoWinner = _.reduce(playerTwoArr.sort())
+    //avoid pointless checking for perfomance
+    if (playerOneArr.length < 3 || playerTwoArr < 3) return
+
+    const isPlayerOneWin = getWinner(playerOneArr)
+    const isPlayerTwoWIn = getWinner(playerTwoArr)
+
+    if (isPlayerOneWin) {
+      setGameFinish(true)
+      return (<div style={displayWinnerStyle}>
+        Player 1 Win
+      </div>)
+    }
+    if(isPlayerTwoWIn) {
+      setGameFinish(true)
+      return (<div style={displayWinnerStyle}>
+        Player 2 Win
+      </div>)
+    }
   }
 
-  function getMoveArrangement(moveArray) {
-    // let newArray = _.cloneDeep(moveArray.slice(0,3));
-    let newArray = moveArray
-    // newArray = newArray.sort()
-    let newString = "";
-    _.forEach(newArray, (data) => {
-      newString = newString.concat(data);
-    });
-    return newString;
+   function getWinner(moveArray) {
+    let isWin = false
+
+     _.forEach(possibleWin, (data) => {
+      if(isWin === true) return
+      isWin = _.difference(data, moveArray).length === 0
+    })
+    return isWin
   }
 
   function DisplayNoWinner() {
@@ -151,6 +174,7 @@ export default function App() {
     setFirstPlayer([]);
     setSecondPlayer([]);
     setNumberisClick(0);
+    setGameFinish(false)
   }
 
   function Board() {
@@ -187,7 +211,8 @@ export default function App() {
             <Square index={9} />
           </div>
         </div>
-        <div>{numberIsClick === 9 && <DisplayNoWinner />}</div>
+        <div>{numberIsClick === 8 && <DisplayNoWinner />}</div>
+        <CheckForWinner />
       </div>
     );
   }
